@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
-class GenerateCertificateTest {
+class CertificateServiceTest {
 
     private User user;
 
@@ -35,11 +35,11 @@ class GenerateCertificateTest {
     CertificateProvider certificateProvider;
 
 
-    private GenerateCertificate generateCertificate;
+    private CertificateService certificateService;
 
     @BeforeEach
     void init() {
-        generateCertificate = new GenerateCertificate(enrollmentProvider, certificateProvider);
+        certificateService = new CertificateService(enrollmentProvider, certificateProvider);
 
         user = new User();
         user.setId(1L);
@@ -57,14 +57,14 @@ class GenerateCertificateTest {
 
         when(enrollmentProvider.isCompleted(anyLong(), anyLong())).thenReturn(true);
         doNothing().when(enrollmentProvider).setCertificatePath(any(), anyLong(), anyLong());
-        when(certificateProvider.get(any(), anyLong())).thenReturn(new Certificate(fileName, content));
+        when(certificateProvider.generate(any(), anyLong())).thenReturn(new Certificate(fileName, content));
 
         //when
-        Certificate response = generateCertificate.get(user, 2L);
+        Certificate response = certificateService.get(user, 2L);
 
         //then
         verify(enrollmentProvider, times(1)).isCompleted(anyLong(), anyLong());
-        assertThat(response.getName()).isEqualTo(fileName);
+        assertThat(response.getPath()).isEqualTo(fileName);
         assertThat(response.getContent()).isEqualTo(content);
     }
 
@@ -76,7 +76,7 @@ class GenerateCertificateTest {
 
         //then
         Assertions.assertThatExceptionOfType(ZerofiltreException.class)
-                .isThrownBy(() -> generateCertificate.get(user, 2L));
+                .isThrownBy(() -> certificateService.get(user, 2L));
     }
 
 

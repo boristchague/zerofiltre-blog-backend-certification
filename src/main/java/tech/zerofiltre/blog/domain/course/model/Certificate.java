@@ -11,6 +11,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Certificate {
-    private String name;
+    private String path;
+    private String courseTitle;
+    private String ownerFullName;
     private byte[] content;
 }

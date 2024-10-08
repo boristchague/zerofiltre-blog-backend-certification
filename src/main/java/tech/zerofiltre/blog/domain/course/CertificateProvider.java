@@ -7,5 +7,5 @@ import tech.zerofiltre.blog.domain.user.model.User;
 
 public interface CertificateProvider {
 
-    Certificate get(User user, long courseId) throws ZerofiltreException;
+    Certificate generate(User user, long courseId) throws ZerofiltreException;
 }

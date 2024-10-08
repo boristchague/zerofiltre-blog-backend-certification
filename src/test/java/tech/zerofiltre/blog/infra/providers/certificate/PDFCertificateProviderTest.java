@@ -48,7 +48,7 @@ class PDFCertificateProviderTest {
         when(courseProvider.getTitle(anyLong())).thenReturn("title");
 
         //when
-        certificateProvider.get(ZerofiltreUtils.createMockUser(false), 3);
+        certificateProvider.generate(ZerofiltreUtils.createMockUser(false), 3);
 
 
         //then
@@ -66,7 +66,7 @@ class PDFCertificateProviderTest {
 
 
         //when
-        certificateProvider.get(ZerofiltreUtils.createMockUser(false), 3);
+        certificateProvider.generate(ZerofiltreUtils.createMockUser(false), 3);
 
 
         //then

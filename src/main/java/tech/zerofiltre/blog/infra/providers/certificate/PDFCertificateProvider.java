@@ -25,13 +25,13 @@ public class PDFCertificateProvider implements CertificateProvider {
     private final PDFCertificateEngine pdfCertificateEngine;
 
     @Override
-    public Certificate get(User user, long courseId) throws ZerofiltreException {
+    public Certificate generate(User user, long courseId) throws ZerofiltreException {
 
         Certificate certificate = new Certificate();
         String fullName = user.getFullName();
         String courseTitle = courseProvider.getTitle(courseId);
         String fileName = "certificates/" + ZerofiltreUtils.sanitizeString(fullName) + "_" + ZerofiltreUtils.sanitizeString(courseTitle) + ".pdf";
-        certificate.setName(fileName);
+        certificate.setPath(fileName);
 
         Optional<byte[]> storedCertificate = storageProvider.get(fileName);
         if (storedCertificate.isPresent()) {

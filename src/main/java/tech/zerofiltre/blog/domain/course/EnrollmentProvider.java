@@ -20,4 +20,6 @@ public interface EnrollmentProvider {
     boolean isCompleted(long userId, long courseId);
 
     void setCertificatePath(String path, long id, long courseId);
+
+    Enrollment enrollmentOf(String uuid);
 }

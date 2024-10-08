@@ -1,12 +1,12 @@
 package tech.zerofiltre.blog.infra.providers.database.course.model;
 
 import lombok.*;
-import tech.zerofiltre.blog.infra.providers.database.*;
-import tech.zerofiltre.blog.infra.providers.database.user.model.*;
+import tech.zerofiltre.blog.infra.providers.database.BaseEntityJPA;
+import tech.zerofiltre.blog.infra.providers.database.user.model.UserJPA;
 
 import javax.persistence.*;
-import java.time.*;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -31,6 +31,8 @@ public class EnrollmentJPA extends BaseEntityJPA {
     private LocalDateTime lastModifiedAt;
     private boolean forLife;
     private String certificatePath;
+    private String certificateHash;
+    private String certificateUUID;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "enrollment", orphanRemoval = true)
     private Set<CompletedLessonJPA> completedLessons;

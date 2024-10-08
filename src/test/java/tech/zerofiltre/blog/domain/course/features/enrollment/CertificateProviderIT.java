@@ -74,10 +74,10 @@ class CertificateProviderIT {
         when(certificateEngine.process(any(), any(), anyString(), anyString())).thenReturn(new byte[]{1, 2});
 
         //when
-        Certificate response = pdfCertificateProvider.get(user, course.getId());
+        Certificate response = pdfCertificateProvider.generate(user, course.getId());
 
         //then
         assertThat(response.getContent()).isNotEmpty();
-        assertThat(response.getName()).isEqualTo("certificates/Testeur_Humain_Cours_sur_les_tests.pdf");
+        assertThat(response.getPath()).isEqualTo("certificates/Testeur_Humain_Cours_sur_les_tests.pdf");
     }
 }
