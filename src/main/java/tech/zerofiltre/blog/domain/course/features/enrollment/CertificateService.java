@@ -25,6 +25,8 @@ public class CertificateService {
     public Certificate get(User user, long courseId) throws ZerofiltreException {
         if (enrollmentProvider.isCompleted(user.getId(), courseId)) {
             Certificate certificate = certificateProvider.generate(user, courseId);
+            //generer uuid
+            // generer le hash
             enrollmentProvider.setCertificatePath(certificate.getPath(), user.getId(), courseId);
             return certificate;
         }

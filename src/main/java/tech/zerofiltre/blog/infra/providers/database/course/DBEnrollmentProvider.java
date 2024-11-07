@@ -70,4 +70,9 @@ public class DBEnrollmentProvider implements EnrollmentProvider {
     public void setCertificatePath(String certificatePath, long userId, long courseId) {
         repository.updateCertificatePathByUserIdAndCourseId(certificatePath, userId, courseId);
     }
+
+    @Override
+    public Enrollment enrollmentOf(String uuid) {
+        return null;
+    }
 }
