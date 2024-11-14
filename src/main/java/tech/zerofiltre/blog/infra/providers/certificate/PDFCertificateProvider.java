@@ -1,5 +1,6 @@
 package tech.zerofiltre.blog.infra.providers.certificate;
 
+import com.google.zxing.WriterException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -45,7 +46,7 @@ public class PDFCertificateProvider implements CertificateProvider {
             storageProvider.store(content, fileName);
             certificate.setContent(content);
             return certificate;
-        } catch (IOException e) {
+        } catch (IOException | WriterException e) {
             throw new ZerofiltreException("Error creating certificate for " + fullName, e);
         }
 

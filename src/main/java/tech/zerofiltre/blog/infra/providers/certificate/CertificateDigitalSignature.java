@@ -1,12 +1,18 @@
 package tech.zerofiltre.blog.infra.providers.certificate;
 
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
 import tech.zerofiltre.blog.domain.course.model.Certificate;
 import tech.zerofiltre.blog.infra.providers.database.CertificateRepository;
 
+import java.awt.image.BufferedImage;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
+import com.google.zxing.BarcodeFormat;
 
 public class CertificateDigitalSignature {
 
@@ -47,8 +53,27 @@ public class CertificateDigitalSignature {
 
     public void generateUuid(Certificate certificate) {
         // Générer un UUID unique pour le certificat
-        String uuid = UUID.randomUUID().toString();
+        UUID uuid = UUID.randomUUID();
         certificate.setUuid(uuid);
+    }
+
+    public BufferedImage generateQrCode(Certificate certificate) throws WriterException {
+
+        UUID uuid = certificate.getUuid();
+        String fullName = certificate.getOwnerFullName();
+        String courseTitle = certificate.getCourseTitle();
+
+        String contents = "/certificate/verification?fullname="+fullName+"&courseTitle="+courseTitle+"&uuid="+uuid;
+        BarcodeFormat barcodeFormat = BarcodeFormat.QR_CODE;
+
+        int width = 300;
+        int height = 300;
+
+        MultiFormatWriter barcodeWriter = new MultiFormatWriter();
+        BitMatrix matrix = barcodeWriter.encode(contents, barcodeFormat, width, height);
+        BufferedImage qrCodeImg = MatrixToImageWriter.toBufferedImage(matrix);
+
+        return qrCodeImg;
     }
 
 

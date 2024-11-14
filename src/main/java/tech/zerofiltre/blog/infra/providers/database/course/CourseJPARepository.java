@@ -56,5 +56,7 @@ public interface CourseJPARepository extends JpaRepository<CourseJPA, Long> {
     @Query("select a.title from CourseJPA a WHERE a.id=?1")
     String getTitle(long courseId);
 
+    @Query("select a.id from CourseJPA a WHERE a.title=:courseTitle")
+    long getCourseByCourseTitle(String courseTitle);
 }
 

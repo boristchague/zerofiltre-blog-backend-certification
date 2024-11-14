@@ -6,7 +6,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.thymeleaf.ITemplateEngine;
+import tech.zerofiltre.blog.domain.course.features.enrollment.CertificateService;
 import tech.zerofiltre.blog.domain.error.ZerofiltreException;
+import tech.zerofiltre.blog.infra.entrypoints.rest.SecurityContextManager;
+import tech.zerofiltre.blog.infra.providers.database.course.CourseJPARepository;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -20,12 +23,16 @@ class PDFCertificateEngineTest {
 
     @Mock
     private ITemplateEngine templateEngine;
+    CertificateDigitalSignature certificateDigitalSignature;
+    private CertificateService certificateService;
+    private SecurityContextManager securityContextManager;
+    private CourseJPARepository courseJPARepository;
 
     private PDFCertificateEngine certificateEngine;
 
     @BeforeEach
     void init() {
-        certificateEngine = new PDFCertificateEngine(templateEngine);
+        certificateEngine = new PDFCertificateEngine(templateEngine, certificateDigitalSignature, certificateService, securityContextManager, courseJPARepository);
 
     }
 
