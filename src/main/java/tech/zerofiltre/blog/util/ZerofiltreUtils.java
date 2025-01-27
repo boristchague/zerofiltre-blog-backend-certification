@@ -19,6 +19,7 @@ import tech.zerofiltre.blog.domain.user.model.User;
 import tech.zerofiltre.blog.infra.security.config.EmailValidator;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -380,6 +381,27 @@ public class ZerofiltreUtils {
 
     public static String sanitizeString(String filename) {
         return filename.replaceAll("[/\\\\:*?\"<>| ]+", "_");
+    }
+
+    public static String convertToHash(String data) throws NoSuchAlgorithmException {
+
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] encodedhash = digest.digest(data.getBytes(StandardCharsets.UTF_8));
+
+        // Convertit le hachage en une chaîne hexadécimale
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : encodedhash) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
+
+
+    public static String generateHash(String fullName, String courseTitle) throws NoSuchAlgorithmException {
+        String dataToHash = fullName + ":" + courseTitle;
+        return convertToHash(dataToHash);
     }
 
 }

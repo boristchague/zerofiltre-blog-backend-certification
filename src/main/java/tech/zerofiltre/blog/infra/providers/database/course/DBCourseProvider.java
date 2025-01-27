@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class DBCourseProvider implements CourseProvider {
-
+// Q1 : pourquoi dbcoursePro implémente provider de la couche domaine.
     private final CourseJPARepository repository;
     private final UserJPARepository userRepository;
     private final CourseJPAMapper mapper = Mappers.getMapper(CourseJPAMapper.class);

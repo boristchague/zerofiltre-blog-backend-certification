@@ -36,4 +36,9 @@ public class NotEnrolledEnrollmentProvider implements EnrollmentProvider {
     public void setCertificatePath(String path, long id, long courseId) {
 
     }
+
+    @Override
+    public Enrollment enrollmentOf(String uuid) {
+        return null;
+    }
 }

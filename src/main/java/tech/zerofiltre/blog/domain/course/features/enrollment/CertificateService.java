@@ -1,5 +1,6 @@
 package tech.zerofiltre.blog.domain.course.features.enrollment;
 
+import com.google.zxing.WriterException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -10,7 +11,10 @@ import tech.zerofiltre.blog.domain.course.model.Enrollment;
 import tech.zerofiltre.blog.domain.error.CertificateVerificationFailedException;
 import tech.zerofiltre.blog.domain.error.ZerofiltreException;
 import tech.zerofiltre.blog.domain.user.model.User;
+import tech.zerofiltre.blog.util.ZerofiltreUtils;
 
+import javax.validation.constraints.AssertTrue;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,31 +26,42 @@ public class CertificateService {
     private final EnrollmentProvider enrollmentProvider;
     private final CertificateProvider certificateProvider;
 
-    public Certificate get(User user, long courseId) throws ZerofiltreException {
+
+    public Certificate get(User user, long courseId) throws ZerofiltreException, NoSuchAlgorithmException, WriterException {
         if (enrollmentProvider.isCompleted(user.getId(), courseId)) {
             Certificate certificate = certificateProvider.generate(user, courseId);
-            //generer uuid
-            // generer le hash
             enrollmentProvider.setCertificatePath(certificate.getPath(), user.getId(), courseId);
+            certificateProvider.save(certificate);
             return certificate;
         }
         throw new ZerofiltreException("The certificate cannot be issued. The course has not yet been completed.");
     }
 
-    public List<String> verify(String uuid, String fullname, String courseTitle) throws CertificateVerificationFailedException {
+    public List<String> verify(String uuid, String fullname, String courseTitle) throws ZerofiltreException, NoSuchAlgorithmException {
 
-        Enrollment enrollment = enrollmentProvider.enrollmentOf(uuid);
 
-        //hash
-        //fullName
-        //courseTitle
+        //hash - fullName - courseTitle //mettre genererHash dans un utils pour
+        String collectedHash = String.valueOf(ZerofiltreUtils.generateHash(fullname, courseTitle));
+        Certificate collectedCertificate = certificateProvider.findByUuid(uuid);
 
-        //newHash = hash(fullName,courseTitle);
+        Certificate dbCertificate = certificateProvider.findByOwnerFullNameAndCourseTitle(fullname, courseTitle);
+        String dbHash = dbCertificate.getHash();
 
         //compare(hash,newHash) ==> ok ou ko;
+        List<String> array = new ArrayList<>();
 
-        return new ArrayList<>();
+        if(dbHash.equals(collectedHash) == true){
+            array.add(fullname + "OK");
+            array.add(courseTitle + "OK");
+        }else {
+            array.add(fullname + "KO");
+            array.add(courseTitle + "KO");
+        }
+        return array;
     }
+
+
+
 
 
 }

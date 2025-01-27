@@ -17,6 +17,6 @@ public class Certificate {
     private String courseTitle;
     private String ownerFullName;
     private byte[] content;
-    private UUID uuid;   // Champ UUID pour le code de vérification unique
-    private String hash;   // Champ pour stocker le hachage des données du certificat
+    private String uuid;
+    private String hash;
 }

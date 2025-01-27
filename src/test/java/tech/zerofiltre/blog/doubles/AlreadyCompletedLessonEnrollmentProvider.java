@@ -43,4 +43,9 @@ public class AlreadyCompletedLessonEnrollmentProvider implements EnrollmentProvi
     public void setCertificatePath(String path, long id, long courseId) {
 
     }
+
+    @Override
+    public Enrollment enrollmentOf(String uuid) {
+        return null;
+    }
 }

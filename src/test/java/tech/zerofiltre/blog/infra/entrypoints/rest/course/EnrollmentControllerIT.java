@@ -36,6 +36,7 @@ import tech.zerofiltre.blog.infra.providers.api.k8sprovisioner.K8sSandboxProvide
 import tech.zerofiltre.blog.infra.providers.api.so.StackOverflowLoginProvider;
 import tech.zerofiltre.blog.infra.providers.certificate.PDFCertificateEngine;
 import tech.zerofiltre.blog.infra.providers.certificate.PDFCertificateProvider;
+import tech.zerofiltre.blog.infra.providers.database.course.CertificateJPARepository;
 import tech.zerofiltre.blog.infra.providers.database.course.DBChapterProvider;
 import tech.zerofiltre.blog.infra.providers.database.purchase.DBPurchaseProvider;
 import tech.zerofiltre.blog.infra.providers.database.user.DBUserProvider;
@@ -90,6 +91,8 @@ class EnrollmentControllerIT {
     DBVerificationTokenProvider verificationTokenProvider;
     @MockBean
     JwtTokenProvider jwtTokenProvider;
+    @MockBean
+    CertificateJPARepository certificateJPARepository;
 
     @MockBean
     K8sSandboxProvider sandboxProvider;

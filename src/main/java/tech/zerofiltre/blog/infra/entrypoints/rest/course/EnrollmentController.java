@@ -1,5 +1,6 @@
 package tech.zerofiltre.blog.infra.entrypoints.rest.course;
 
+import com.google.zxing.WriterException;
 import org.springframework.context.MessageSource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -25,14 +26,11 @@ import tech.zerofiltre.blog.domain.user.features.UserNotFoundException;
 import tech.zerofiltre.blog.domain.user.model.User;
 import tech.zerofiltre.blog.infra.entrypoints.rest.SecurityContextManager;
 import tech.zerofiltre.blog.infra.entrypoints.rest.course.model.CertificateVerificationResponseVM;
-import tech.zerofiltre.blog.infra.providers.certificate.CertificateDigitalSignature;
-import tech.zerofiltre.blog.infra.providers.database.CertificateRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/enrollment")
@@ -46,9 +44,7 @@ public class EnrollmentController {
 
     private final CertificateService certificateService;
     private final MessageSource messageSource;
-    private final CertificateRepository certificateRepository;
-    private final CertificateDigitalSignature certificateDigitalSignature;
-
+    private final CertificateProvider certificateProvider;
 
     public EnrollmentController(
             EnrollmentProvider enrollmentProvider,
@@ -59,11 +55,10 @@ public class EnrollmentController {
             ChapterProvider chapterProvider,
             SandboxProvider sandboxProvider,
             PurchaseProvider purchaseProvider,
-            CertificateProvider certificateProvider, MessageSource messageSource, CertificateRepository certificateRepository, CertificateDigitalSignature certificateDigitalSignature) {
+            CertificateProvider certificateProvider, MessageSource messageSource) {
         this.securityContextManager = securityContextManager;
         this.messageSource = messageSource;
-        this.certificateRepository = certificateRepository;
-        this.certificateDigitalSignature = certificateDigitalSignature;
+        this.certificateProvider = certificateProvider;
         enroll = new Enroll(enrollmentProvider, courseProvider, userProvider, chapterProvider, sandboxProvider, purchaseProvider);
         suspend = new Suspend(enrollmentProvider, chapterProvider, purchaseProvider, sandboxProvider);
         completeLesson = new CompleteLesson(enrollmentProvider, lessonProvider, chapterProvider, courseProvider);
@@ -124,7 +119,7 @@ public class EnrollmentController {
     }
 
     @GetMapping("/certificate")
-    public ResponseEntity<InputStreamResource> giveCertificateByCourseId(@RequestParam long courseId) throws ZerofiltreException, NoSuchAlgorithmException {
+    public ResponseEntity<InputStreamResource> giveCertificateByCourseId(@RequestParam long courseId) throws ZerofiltreException, NoSuchAlgorithmException, WriterException {
         User user = securityContextManager.getAuthenticatedUser();
         Certificate certificate = certificateService.get(user, courseId);
 
@@ -134,14 +129,6 @@ public class EnrollmentController {
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + certificate.getPath());
 
-        // Générer un UUID unique pour le certificat
-        certificateDigitalSignature.generateUuid(certificate);
-
-        // Combiner les données du certificat pour générer le hachage
-        certificateDigitalSignature.generateHash(certificate);
-
-        // Sauvegarder le certificat dans la base de données
-        certificateRepository.save(certificate);
 
         return ResponseEntity.ok()
                 .headers(headers)
@@ -167,7 +154,7 @@ public class EnrollmentController {
             response.setOwnerFullName(certificateData.get(1));
             return response;
 
-        } catch (CertificateVerificationFailedException e) {
+        } catch (NoSuchAlgorithmException | ZerofiltreException e) {
             if (CertificateVerificationFailedException.INVALID.equals(e.getMessage())) {
                 response.setResponse(messageSource.getMessage("message.certificate.verification.response.invalid", new Object[]{}, request.getLocale()));
                 response.setDescription(messageSource.getMessage("message.certificate.verification.description.invalid", new Object[]{}, request.getLocale()));
@@ -178,26 +165,6 @@ public class EnrollmentController {
             return response;
         }
 
-    }
-
-    @GetMapping("/certificate/verification")
-    public CertificateVerificationResponseVM verifyCertificate1(){
-
-        /*
-        Exposer l’endpoint du QRCODE permettant de vérifier le certificat
-
-        stocker les données du certificat (fullname,courseTitle) en paramètre de l’url du QRCODE du certificat
-
-        stocker le uuid en paramètre  de l’url du QRCODE du certificat
-                /certificate/verification?fullname=philippe simo&courseTitle=DDD&uuid=xxxxxxxxx
-
-        à l’appel de l’endpoint, récupérer les données du certificat, les hasher, récupérer l’uuid du QRcode,
-        aller rechercher le hash en bd, comparer les deux hashs, si ok, renvoyer les infos du certificat avec OK,
-        sinon renvoyer KO
-
-
-         */
-        return null;
     }
 
 }

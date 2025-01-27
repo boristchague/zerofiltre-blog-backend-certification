@@ -1,5 +1,6 @@
 package tech.zerofiltre.blog.domain.course.features.enrollment;
 
+import com.google.zxing.WriterException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,12 +15,14 @@ import tech.zerofiltre.blog.domain.storage.StorageProvider;
 import tech.zerofiltre.blog.domain.user.model.User;
 import tech.zerofiltre.blog.infra.providers.certificate.PDFCertificateEngine;
 import tech.zerofiltre.blog.infra.providers.certificate.PDFCertificateProvider;
+import tech.zerofiltre.blog.infra.providers.database.course.CertificateJPARepository;
 import tech.zerofiltre.blog.infra.providers.database.course.CourseJPARepository;
 import tech.zerofiltre.blog.infra.providers.database.course.DBCourseProvider;
 import tech.zerofiltre.blog.infra.providers.database.user.DBUserProvider;
 import tech.zerofiltre.blog.infra.providers.database.user.UserJPARepository;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -48,15 +51,20 @@ class CertificateProviderIT {
     @Mock
     private PDFCertificateEngine certificateEngine;
 
+    @Mock
+    private CertificateJPARepository certificateJPARepository;
+
+
     @BeforeEach
     void init() {
         dbUserProvider = new DBUserProvider(userJPARepository);
         dbCourseProvider = new DBCourseProvider(courseJPARepository, userJPARepository);
-        pdfCertificateProvider = new PDFCertificateProvider(storageProvider, dbCourseProvider, certificateEngine);
+        pdfCertificateProvider = new PDFCertificateProvider(storageProvider, dbCourseProvider, certificateEngine,
+                certificateJPARepository);
     }
 
     @Test
-    void generatesCertificate_Properly() throws ZerofiltreException, IOException {
+    void generatesCertificate_Properly() throws ZerofiltreException, IOException, WriterException, NoSuchAlgorithmException {
         //given
         User user = new User();
         user.setFullName("Testeur Humain");
@@ -71,7 +79,7 @@ class CertificateProviderIT {
 
         when(storageProvider.get(any())).thenReturn(Optional.empty());
         doNothing().when(storageProvider).store(any(), anyString());
-        when(certificateEngine.process(any(), any(), anyString(), anyString())).thenReturn(new byte[]{1, 2});
+        when(certificateEngine.process(any(), any(), anyString(), anyString(), anyString())).thenReturn(new byte[]{1, 2});
 
         //when
         Certificate response = pdfCertificateProvider.generate(user, course.getId());

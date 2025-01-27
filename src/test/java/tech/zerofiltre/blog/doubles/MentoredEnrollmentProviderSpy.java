@@ -39,6 +39,11 @@ public class MentoredEnrollmentProviderSpy implements EnrollmentProvider {
     }
 
     @Override
+    public Enrollment enrollmentOf(String uuid) {
+        return null;
+    }
+
+    @Override
     public void delete(long userId, long courseId) {
 
     }
