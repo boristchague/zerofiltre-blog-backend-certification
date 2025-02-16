@@ -16,6 +16,9 @@ import tech.zerofiltre.blog.domain.user.model.User;
 import tech.zerofiltre.blog.util.ZerofiltreUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -80,6 +83,15 @@ class CertificateServiceTest {
         //then
         Assertions.assertThatExceptionOfType(ZerofiltreException.class)
                 .isThrownBy(() -> certificateService.get(user, 2L));
+    }
+
+    @Test
+    void testUrlEncoding() throws UnsupportedEncodingException {
+
+        String hello = "Hello World! How are you?";
+        String enHello = "Hello%20World%21%20How%20are%20you%3F";
+
+        assertThat(URLEncoder.encode(hello, StandardCharsets.US_ASCII)).isEqualTo(enHello);
     }
 
 

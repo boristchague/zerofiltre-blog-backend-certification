@@ -19,6 +19,8 @@ import tech.zerofiltre.blog.infra.providers.database.course.model.CertificateJPA
 import tech.zerofiltre.blog.util.ZerofiltreUtils;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.Optional;
@@ -39,26 +41,29 @@ public class PDFCertificateProvider implements CertificateProvider {
     @Override
     public Certificate generate(User user, long courseId) throws ZerofiltreException {
 
-        Certificate certificate = new Certificate();
         String fullName = user.getFullName()  + UUID.randomUUID();
-        String courseTitle = courseProvider.getTitle(courseId);
-        String fileName = "certificates/" + ZerofiltreUtils.sanitizeString(fullName) + "_" + ZerofiltreUtils.sanitizeString(courseTitle) + ".pdf";
-        certificate.setPath(fileName);
-
-        //Optional<byte[]> storedCertificate = storageProvider.get(fileName);
-//        if (storedCertificate.isPresent()) {
-//            certificate.setContent(storedCertificate.get());
-//            return certificate;
-//        }
-
         try {
+            Certificate certificate = new Certificate();
+            String courseTitle = courseProvider.getTitle(courseId);
+
+            String fileName = "certificates/" + fullName.replaceAll("\\s+", "") + "_" + courseTitle + ".pdf";
+            certificate.setPath(fileName);
+            certificate.setCourseTitle(courseTitle);
+            certificate.setOwnerFullName(fullName);
+
+            Optional<byte[]> storedCertificate = storageProvider.get(fileName);
+        if (storedCertificate.isPresent()) {
+            certificate.setContent(storedCertificate.get());
+            return certificate;
+        }
+
             String language = user.getLanguage() != null ? user.getLanguage() : Locale.FRANCE.getLanguage();
             String uuid = UUID.randomUUID().toString();
             byte[] content = pdfCertificateEngine.process(new Locale(language), fullName, courseTitle, fileName, uuid);
+            certificate.setContent(content);
             storageProvider.store(content, fileName);
             certificate.setUuid(uuid);
             certificate.setHash(ZerofiltreUtils.generateHash(fullName, courseTitle));
-            certificate.setContent(content);
             return certificate;
         } catch (IOException | WriterException | NoSuchAlgorithmException e) {
             throw new ZerofiltreException("Error creating certificate for " + fullName, e);
