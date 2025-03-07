@@ -72,7 +72,7 @@ public class PDFCertificateProvider implements CertificateProvider {
     }
 
     @Override
-    public Certificate save(Certificate certificate) throws NoSuchAlgorithmException {
+    public Certificate save(Certificate certificate) {
         CertificateJPA certificateJPA = certificateMapper.toJPA(certificate);
         return  certificateMapper.fromJPA(certificateJPARepository.save(certificateJPA));
     }

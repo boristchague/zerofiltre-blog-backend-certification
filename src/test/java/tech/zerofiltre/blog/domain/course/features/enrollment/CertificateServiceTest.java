@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.springframework.context.MessageSource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import tech.zerofiltre.blog.domain.course.CertificateProvider;
 import tech.zerofiltre.blog.domain.course.CourseProvider;
@@ -39,12 +40,15 @@ class CertificateServiceTest {
     @Mock
     CertificateProvider certificateProvider;
 
+    @Mock
+    MessageSource messageSource;
+
 
     private CertificateService certificateService;
 
     @BeforeEach
     void init() {
-        certificateService = new CertificateService(enrollmentProvider, certificateProvider);
+        certificateService = new CertificateService(enrollmentProvider, certificateProvider, messageSource);
 
         user = new User();
         user.setId(1L);

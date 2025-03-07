@@ -1,6 +1,7 @@
 package tech.zerofiltre.blog.infra.entrypoints.rest.course;
 
 import com.google.zxing.WriterException;
+import liquibase.pro.packaged.Z;
 import org.springframework.context.MessageSource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -63,7 +64,7 @@ public class EnrollmentController {
         suspend = new Suspend(enrollmentProvider, chapterProvider, purchaseProvider, sandboxProvider);
         completeLesson = new CompleteLesson(enrollmentProvider, lessonProvider, chapterProvider, courseProvider);
         findEnrollment = new FindEnrollment(enrollmentProvider, courseProvider, chapterProvider);
-        certificateService = new CertificateService(enrollmentProvider, certificateProvider);
+        certificateService = new CertificateService(enrollmentProvider, certificateProvider, messageSource);
     }
 
 
@@ -119,22 +120,26 @@ public class EnrollmentController {
     }
 
     @GetMapping("/certificate")
-    public ResponseEntity<InputStreamResource> giveCertificateByCourseId(@RequestParam long courseId) throws ZerofiltreException, NoSuchAlgorithmException, WriterException {
+    public ResponseEntity<InputStreamResource> giveCertificateByCourseId(@RequestParam long courseId) throws ZerofiltreException {
         User user = securityContextManager.getAuthenticatedUser();
-        Certificate certificate = certificateService.get(user, courseId);
+        Certificate certificate = null;
+        try {
+            certificate = certificateService.get(user, courseId);
 
-        byte[] content = certificate.getContent();
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(content);
+            byte[] content = certificate.getContent();
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(content);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + certificate.getPath());
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + certificate.getPath());
 
-
-        return ResponseEntity.ok()
-                .headers(headers)
-                .contentLength(content.length)
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(new InputStreamResource(byteArrayInputStream));
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentLength(content.length)
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(new InputStreamResource(byteArrayInputStream));
+        } catch (ZerofiltreException|NoSuchAlgorithmException e) {
+            throw new ZerofiltreException("Can't get the Certifcate from DataBase", e);
+        }
     }
 
     @GetMapping("/certificate/verification")
@@ -143,28 +148,15 @@ public class EnrollmentController {
             @RequestParam String fullname,
             @RequestParam String courseTitle,
             HttpServletRequest request) {
-
-        CertificateVerificationResponseVM response = new CertificateVerificationResponseVM();
-
+        CertificateVerificationResponseVM response= new CertificateVerificationResponseVM();
         try {
-            List<String> certificateData = certificateService.verify(uuid, fullname, courseTitle);
-            response.setResponse(messageSource.getMessage("message.certificate.verification.response.valid", new Object[]{}, request.getLocale()));
-            response.setDescription(messageSource.getMessage("message.certificate.verification.description.valid", new Object[]{}, request.getLocale()));
-            response.setCourseTitle(certificateData.get(0));
-            response.setOwnerFullName(certificateData.get(1));
-            return response;
-
-        } catch (NoSuchAlgorithmException | ZerofiltreException e) {
-            if (CertificateVerificationFailedException.INVALID.equals(e.getMessage())) {
-                response.setResponse(messageSource.getMessage("message.certificate.verification.response.invalid", new Object[]{}, request.getLocale()));
-                response.setDescription(messageSource.getMessage("message.certificate.verification.description.invalid", new Object[]{}, request.getLocale()));
-                return response;
-            }
+            return certificateService.verify(uuid, fullname, courseTitle, request);
+        } catch (ZerofiltreException e) {
             response.setResponse(messageSource.getMessage("message.certificate.verification.response.error", new Object[]{}, request.getLocale()));
             response.setDescription(messageSource.getMessage("message.certificate.verification.description.error", new Object[]{}, request.getLocale()));
             return response;
         }
-
     }
+
 
 }
